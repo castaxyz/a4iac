@@ -1,0 +1,27 @@
+# ============================================================
+# terraform.tfvars.example
+#
+# NUNCA subir terraform.tfvars al control de versiones.
+# ============================================================
+
+# -- Región y nombre del proyecto --
+# aws_region   = "us-east-1"
+# project_name = "a4iac-moodle"
+
+# -- Red --
+# vpc_cidr            = "10.0.0.0/16"
+# public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+
+# -- Cómputo --
+# instance_type    = "t3.small"
+# root_volume_size = 20
+
+# -- Base de datos (RDS MariaDB) --
+# db_name     = "moodle"
+# db_username = "moodleuser"
+db_password = "ContraseñaSegura123!"
+
+# -- Administrador de Moodle --
+# moodle_admin_user  = "admin"
+moodle_admin_pass  = "ContraseñaSegura123!"
+# moodle_admin_email = "admin@example.com"
