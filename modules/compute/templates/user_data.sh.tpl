@@ -14,24 +14,31 @@ swapon /swapfile
 echo '/swapfile swap swap defaults 0 0' >> /etc/fstab
 
 # ---------------------------------------------------------------------------
-# 2. Actualización del sistema e instalación de paquetes
+# 2. Actualización del sistema e instalación de paquetes (PHP 8.2 compatible con Moodle)
 # ---------------------------------------------------------------------------
 dnf update -y
 dnf install -y \
   httpd \
-  php \
-  php-fpm \
-  php-mysqlnd \
-  php-gd \
-  php-mbstring \
-  php-xml \
-  php-intl \
-  php-zip \
-  php-soap \
-  php-opcache \
-  php-sodium \
+  php8.2 \
+  php8.2-cli \
+  php8.2-common \
+  php8.2-fpm \
+  php8.2-mysqlnd \
+  php8.2-gd \
+  php8.2-mbstring \
+  php8.2-xml \
+  php8.2-intl \
+  php8.2-zip \
+  php8.2-soap \
+  php8.2-opcache \
+  php8.2-sodium \
   git \
   mariadb105
+
+# Habilitar e iniciar Apache de inmediato con página temporal
+systemctl enable --now php-fpm
+systemctl enable --now httpd
+echo "<h1>Instalando Campus Virtual Moodle... Por favor espere unos minutos y recargue esta pagina.</h1>" > /var/www/html/index.html
 
 # ---------------------------------------------------------------------------
 # 3. Configuración de PHP para Moodle
@@ -42,6 +49,7 @@ memory_limit = 256M
 post_max_size = 64M
 upload_max_filesize = 64M
 EOF
+systemctl restart php-fpm
 
 # ---------------------------------------------------------------------------
 # 4. Esperar a que la base de datos acepte conexiones
@@ -63,6 +71,7 @@ chmod 770 /var/moodledata
 # ---------------------------------------------------------------------------
 # 6. Descarga de Moodle (shallow clone)
 # ---------------------------------------------------------------------------
+rm -rf /var/www/html
 git clone -b MOODLE_403_STABLE --depth 1 https://github.com/moodle/moodle.git /var/www/html
 
 # ---------------------------------------------------------------------------
@@ -98,8 +107,7 @@ PUBLIC_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" \
 # 9. Ajuste de permisos del directorio web
 # ---------------------------------------------------------------------------
 chown -R apache:apache /var/www/html
-find /var/www/html -type d -exec chmod 755 {} \;
-find /var/www/html -type f -exec chmod 644 {} \;
+chmod -R 755 /var/www/html
 
 # ---------------------------------------------------------------------------
 # 10. Cron de Moodle
@@ -110,9 +118,8 @@ EOF
 chmod 644 /etc/cron.d/moodle
 
 # ---------------------------------------------------------------------------
-# 11. Habilitar e iniciar servicios
+# 11. Reiniciar servicios web
 # ---------------------------------------------------------------------------
-systemctl enable --now php-fpm
-systemctl enable --now httpd
+systemctl restart php-fpm httpd
 
 echo "Aprovisionamiento de Moodle completado exitosamente."
